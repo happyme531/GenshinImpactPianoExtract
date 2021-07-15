@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
       .help("设置音符检测的阈值, 如果输出的文件中有大量不存在的音符则增大这个值, 反之减少")
       .default_value(DEFAULT_KEY_THRESHOLD);
 
-  parser.add_epilog("提示: 在Windows系统中, 可以直接把待转换的视频拖动到此exe文件上");
+  parser.add_epilog("提示: 在Windows系统中, 可以直接把待转换的视频拖动到此exe文件上\n\n作者: 楚留香(一梦江湖)::声声慢::心慕流霞::李芒果\nps:我不玩原神");
 
   try {
     parser.parse_args(argc, argv);
