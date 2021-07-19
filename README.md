@@ -8,7 +8,9 @@
 
 ## 使用方法
 
-下载最新Release, 解压.  
+
+从[这里](https://github.com/happyme531/GenshinImpactPianoExtract/releases/latest)下载最新Release(下面的.7z压缩包文件), 解压.  
+(如果下载太慢或者无法下载, 可以右键获得链接，之后打开[这里](https://gh.api.99988866.xyz/)，将链接粘贴进去即可高速下载)
 把要转换的视频直接拖到可执行文件上即可.  
 转换得到的midi文件会输出到和输入文件相同的目录下.
 
