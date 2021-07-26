@@ -1,6 +1,9 @@
 [submodule "dependencies/argparse"]
 	path = dependencies/argparse
-	url = https://hub.fastgit.org/p-ranav/argparse
+	url = https://github.com/p-ranav/argparse
 [submodule "dependencies/midifile"]
 	path = dependencies/midifile
 	url = https://github.com/craigsapp/midifile.git
+[submodule "dependencies/ArduinoJson"]
+	path = dependencies/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
