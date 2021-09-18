@@ -46,7 +46,16 @@ int main(int argc, char* argv[]) {
       .help("设置音符检测的阈值, 如果输出的文件中有大量不存在的音符则增大这个值, 反之减少")
       .default_value(DEFAULT_KEY_THRESHOLD);
 
-  parser.add_epilog("提示: 在Windows系统中, 可以直接把待转换的视频拖动到此exe文件上\n\n作者: 楚留香(一梦江湖)::声声慢::心慕流霞::李芒果\nps:我不玩原神");
+  parser.add_epilog(R"123(
+提示: 在Windows系统中, 可以直接把待转换的视频拖动到此exe文件上.
+
+建议使用1080p/720p,30帧的视频. 480p/360p,60帧的视频可能会导致音符缺失.
+由于使用了较为特殊的midi文件格式, 使用某些播放器时播放速度可能会异常的略微变慢.
+如果想在原神或者其它游戏里演奏提取到的乐谱, 可以看一下这个项目中的"楚留香音乐盒"部分: https://github.com/happyme531/clxTools
+
+这是一个开源项目, 如果你觉得这个项目对你有帮助, 请给一个star: https://github.com/happyme531/GenshinImpactPianoExtract
+作者: 楚留香(一梦江湖)::声声慢::心慕流霞::李芒果
+ps:我不玩原神)123");
 
   try {
     parser.parse_args(argc, argv);
@@ -92,9 +101,13 @@ int main(int argc, char* argv[]) {
   output_path += ".mid";
 
   writer.toMidiFile(detector.getResult(),output_path);
-  ui.logI(L"转换完成,文件已输出至" +StringToWString(output_path) + L"请按任意键退出");
+  try {
+    ui.logI(L"转换完成,文件已输出至" + StringToWString(output_path) + L"请按任意键退出");
+  } catch (...) {
+    ui.logI(L"转换完成,请按任意键退出");
+  }
 
-  //pause the program until the user press any key
+  // pause the program until the user press any key
   fflush(stdin);
   getchar();
 

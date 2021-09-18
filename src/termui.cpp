@@ -34,7 +34,7 @@ void TermUI::tuiUpdateLoop(){
                       text(L"/"),
                       to_text(i.stepCount) | size(WIDTH, EQUAL, 4),
                       separator(),
-                      taskCompleted ? spinner(2,1): spinner(2, tuiSpinnerIdx),
+                      taskCompleted ? text(L"✓"): spinner(2, tuiSpinnerIdx),
                       i.currentStep == 0? spinner(16,tuiSpinnerIdx): gauge(i.currentStep / float(i.stepCount)),
                   }) |
                   color(taskCompleted ? Color::Green : Color::White));
@@ -45,19 +45,21 @@ void TermUI::tuiUpdateLoop(){
               auto& msg = logMsgs[i];
               Color col;
               switch (msg.lvl) {
-              case 5:
-                col = Color::Red;
-                break;
-              case 4:
-                col = Color::Orange1;
-                break;
-              case 3:
-                col = Color::Green;
-                break;
-              case 2:
-                col = Color::Blue;
-              case 1:
-                col = Color::Cyan;
+                case 5:
+                  col = Color::Red;
+                  break;
+                case 4:
+                  col = Color::Orange1;
+                  break;
+                case 3:
+                  col = Color::Green;
+                  break;
+                case 2:
+                  col = Color::Blue;
+                  break;
+                case 1:
+                  col = Color::Cyan;
+                  break;
               };
               if (i != logMsgs.size() - 2) {
                 logs.push_back(hbox(text(msg.message)) | flex| color(col));
