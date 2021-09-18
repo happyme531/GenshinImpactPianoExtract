@@ -2,8 +2,31 @@
 
 #include <opencv2/opencv.hpp>
 #include "utils.h"
+#include <queue>
+#include <thread>
 
-void NoteDetector::begin(string filePath, array<Vec3f,21> keyPos,int threshold){
+static queue<Mat*> frameQueue;
+
+static thread* decoderThread;
+
+static bool videoEnded = false;
+
+static void decoderLoop(VideoCapture& video) {
+  while (true) {
+    while (frameQueue.size() < 10) {
+        Mat* frame = new Mat();
+        if (!video.read(*frame)) {
+          videoEnded = true;
+          delete frame;
+          return;
+        }
+        frameQueue.push(frame);
+    }
+    this_thread::sleep_for(chrono::milliseconds(10));
+  }
+}
+
+void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold) {
     ui.addTask(L"获取按键数据");
     VideoCapture video(filePath);
     if (!video.isOpened()) {
@@ -13,15 +36,22 @@ void NoteDetector::begin(string filePath, array<Vec3f,21> keyPos,int threshold){
     double frameTime = 1.0/fps;
     int videoHeight = video.get(CAP_PROP_FRAME_HEIGHT);
     int videoWidth = video.get(CAP_PROP_FRAME_WIDTH);
-    Mat frame;
+    //Mat frame;
     Mat resizedFrame;
     if (logLevel == 5)
       namedWindow("frames");
     lastColors.fill(255);
     pressedKeys.fill(false);
-    while (true){    //处理到视频结尾
+    decoderThread = new thread(decoderLoop, ref(video));
+    decoderThread->detach();
+    while (!videoEnded){    //处理到视频结尾
         if(video.get(CAP_PROP_POS_FRAMES) <= 2) pressedKeys.fill(false);
-        if(!video.read(frame)) break;
+        while (frameQueue.size() == 0) {
+          this_thread::sleep_for(chrono::milliseconds(5));
+          if (videoEnded) break;
+        }
+        if (videoEnded) break;
+        Mat& frame = *frameQueue.front(); 
         resize(frame,resizedFrame,Size(),0.5,0.5);   //宽高缩小一半,和获取位置时一样
         resizedFrame = resizedFrame(Rect(Point(0,videoHeight/4),Point(videoWidth/2-1,videoHeight/2-1))); //切去上半部分, 保留下半部分
         cvtColor(resizedFrame,resizedFrame,COLOR_BGR2GRAY); //只关心灰度
@@ -67,6 +97,8 @@ void NoteDetector::begin(string filePath, array<Vec3f,21> keyPos,int threshold){
         }
         ui.updateLastTaskProgress(video.get(CAP_PROP_POS_FRAMES),video.get(CAP_PROP_FRAME_COUNT));
         ui.updateMsg(L"音符数量:" + to_wstring(result.size()));
+        delete frameQueue.front();
+        frameQueue.pop();
     }
     ui.updateLastTaskProgress(video.get(CAP_PROP_POS_FRAMES),video.get(CAP_PROP_FRAME_COUNT));
     ui.updateMsg(L"音符数量:" + to_wstring(result.size()));

@@ -14,14 +14,24 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+
+
 if(WIN32)
 add_definitions(-D_HAS_STD_BYTE=0)
 add_compile_options(/utf-8)
-#打开asan
-if($<CONFIG:DEBUG>)
-add_compile_options(/fsanitize=address)
 endif()
+
+if(CMAKE_BUILD_TYPE)
+  if(CMAKE_BUILD_TYPE STREQUAL Debug)
+  if(WIN32)
+  add_compile_options(/fsanitize=address)
+  else()
+  add_compile_options(-fsanitize=address)
+  add_link_options(-fsanitize=address)
+  endif()
+  endif()
 endif()
+
 
 aux_source_directory(src GenshinImpactPianoExtract_SRC)
 add_executable(GenshinImpactPianoExtract ${GenshinImpactPianoExtract_SRC})

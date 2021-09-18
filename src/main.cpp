@@ -38,13 +38,18 @@ int main(int argc, char* argv[]) {
   parser.add_argument("-o", "--output")
       .help("输出文件路径")
       .default_value(string("output.mid")); //存储const char*的std::any被any_cast到std::string时会抛异常
-  parser.add_argument("input")
-      .required()
-      .help("输入文件路径");
+
   //get a parameter which represent the threshold of the note finder
   parser.add_argument("-t", "--note-threshold")
       .help("设置音符检测的阈值, 如果输出的文件中有大量不存在的音符则增大这个值, 反之减少")
       .default_value(DEFAULT_KEY_THRESHOLD);
+  parser.add_argument("-c", "--notui")
+      .help("不使用界面")
+      .default_value(false)
+      .implicit_value(true);
+    parser.add_argument("input")
+      .required()
+      .help("输入文件路径");
 
   parser.add_epilog(R"123(
 提示: 在Windows系统中, 可以直接把待转换的视频拖动到此exe文件上.
@@ -71,8 +76,9 @@ ps:我不玩原神)123");
     logLevel = 4;
   }
   TermUI ui;
-  ui.begin();
-
+  if(parser["-c"] == false){
+    ui.begin();
+  }
 
   //Windows - 拖放获取文件路径
   //TODO
