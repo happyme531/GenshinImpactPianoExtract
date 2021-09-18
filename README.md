@@ -1,4 +1,4 @@
-# 原神乐谱导出 ![](https://img.shields.io/badge/Author-%E6%9D%8E%E8%8A%92%E6%9E%9C-yellow.svg) ![](https://img.shields.io/badge/PRs-welcome-blue.svg)
+# 原神乐谱导出 ![](https://img.shields.io/badge/Author-%E6%9D%8E%E8%8A%92%E6%9E%9C-yellow.svg) ![](https://img.shields.io/badge/PRs-welcome-blue.svg) [![CMake](https://github.com/happyme531/GenshinImpactPianoExtract/actions/workflows/cmake.yml/badge.svg)](https://github.com/happyme531/GenshinImpactPianoExtract/actions/workflows/cmake.yml)
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-c-plus-plus.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/0-percent-optimized.svg)](https://forthebadge.com)
