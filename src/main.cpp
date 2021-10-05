@@ -52,15 +52,17 @@ int main(int argc, char* argv[]) {
       .help("输入文件路径");
 
   parser.add_epilog(R"123(
+
 提示: 在Windows系统中, 可以直接把待转换的视频拖动到此exe文件上.
 
 建议使用1080p/720p,30帧的视频. 480p/360p,60帧的视频可能会导致音符缺失.
-由于使用了较为特殊的midi文件格式, 使用某些播放器时播放速度可能会异常的略微变慢.
 如果想在原神或者其它游戏里演奏提取到的乐谱, 可以看一下这个项目中的"楚留香音乐盒"部分: https://github.com/happyme531/clxTools
 
 这是一个开源项目, 如果你觉得这个项目对你有帮助, 请给一个star: https://github.com/happyme531/GenshinImpactPianoExtract
 作者: 楚留香(一梦江湖)::声声慢::心慕流霞::李芒果
 ps:我不玩原神)123");
+
+  parser.add_description(string("\033[1;33m原神乐谱导出 v") + versionStr +"\033[0m");
 
   try {
     parser.parse_args(argc, argv);
