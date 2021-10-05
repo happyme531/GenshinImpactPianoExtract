@@ -34,7 +34,7 @@ void KeyPosFinder::begin(string filePath){
         //medianBlur(resizedFrame,resizedFrame,3);
         //Canny(resizedFrame,resizedFrame,80,255);
         vector<Vec3f> circles;
-        HoughCircles(resizedFrame,circles, HOUGH_GRADIENT,2,50*scaleFactor,200,50,0,60*scaleFactor);
+        HoughCircles(resizedFrame,circles, HOUGH_GRADIENT,2,50*scaleFactor,200,55,0,60*scaleFactor);
         ui.updateMsg(L"找到的按键数量:" + to_wstring(circles.size()));
 
         if (logLevel == 5) {

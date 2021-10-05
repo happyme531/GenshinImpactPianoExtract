@@ -1,5 +1,5 @@
 #include <iostream>
-#include <omp.h>
+//#include <omp.h>
 #include <argparse/argparse.hpp>
 
 #ifdef WIN32
@@ -92,7 +92,7 @@ ps:我不玩原神)123");
   // setwindow
   #endif
 
-  omp_set_num_threads(omp_get_num_procs());
+ // omp_set_num_threads(omp_get_num_procs());
 
   string filepath = parser.get<string>("input");
   KeyPosFinder finder(ui); 

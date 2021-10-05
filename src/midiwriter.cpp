@@ -43,15 +43,18 @@ static int keyToPitch(int key){
     }
     return midiPitch + (octave * 12) ;
 }
-
-
 void MidiWriter::toMidiFile(vector<noteData> data, string fileName){
     MidiFile midiFile;
-    midiFile.addTimbre(0, 0, 0, 0);
-    midiFile.setMillisecondTicks(); //1tick = 1ms, 似乎不被某些midi解析器支持
+    midiFile.addTimbre(0,0,0,0);
+    midiFile.setTPQ(120);
+    midiFile.absoluteTicks();
+    midiFile.addTempo(0, 0, 60);
     for (unsigned int i = 0; i < data.size(); i++) {
-      int startTick = data[i].beginTime * 1000;
-      int endTick = startTick + 200;
+      if(data[i].beginTime < 1) continue; //跳过无效的音符
+      // int startTick = data[i].beginTime * 1000;
+      // int endTick = startTick + 200;
+      int startTick = data[i].beginTime * 120;
+      int endTick = startTick + 30;
       midiFile.addNoteOn(0, startTick, 0, keyToPitch(data[i].key), 100);
       midiFile.addNoteOff(0, endTick, 0, keyToPitch(data[i].key));
     }
