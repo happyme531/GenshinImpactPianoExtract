@@ -11,8 +11,11 @@
 
 从[这里](https://github.com/happyme531/GenshinImpactPianoExtract/releases/latest)下载最新Release(下面的.7z压缩包文件), 解压.  
 (如果下载太慢或者无法下载, 可以在那个7z压缩包文件名处右键获得链接，之后打开[这里](https://gh.api.99988866.xyz/)，将链接粘贴进去即可高速下载)  
+
 解压之后把要转换的视频直接拖到可执行文件上即可.  
 转换得到的midi文件会输出到和输入文件相同的目录下.
+
+配合 [楚留香音乐盒](https://github.com/happyme531/clxTools) 使用, 在原神或者其它游戏里演奏提取到的乐谱.  
 
 ## 编译方法
 
@@ -37,4 +40,4 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
-```
+``
