@@ -110,6 +110,7 @@ ps:我不玩原神)123");
 
   writer.toMidiFile(detector.getResult(),output_path);
   try {
+    //在Windows系统中这里总是报错, 暂时不知道为什么, 可能是因为路径中有特殊字符
     ui.logI(L"转换完成,文件已输出至" + StringToWString(output_path) + L"请按任意键退出");
   } catch (...) {
     ui.logI(L"转换完成,请按任意键退出");

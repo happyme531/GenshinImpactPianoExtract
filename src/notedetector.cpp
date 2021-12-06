@@ -4,10 +4,12 @@
 #include "utils.h"
 #include <queue>
 #include <thread>
+#include <mutex>
 
 static queue<Mat*> frameQueue;
 
 static thread* decoderThread;
+static mutex frameQueueMutex;
 
 static bool videoEnded = false;
 
@@ -20,7 +22,10 @@ static void decoderLoop(VideoCapture& video) {
           delete frame;
           return;
         }
+        //std::queue 线程不安全
+        frameQueueMutex.lock();
         frameQueue.push(frame);
+        frameQueueMutex.unlock();
     }
     this_thread::sleep_for(chrono::milliseconds(10));
   }
@@ -51,7 +56,12 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
           if (videoEnded) break;
         }
         if (videoEnded) break;
+        
+        frameQueueMutex.lock();
         Mat& frame = *frameQueue.front(); 
+        frameQueue.pop();
+        frameQueueMutex.unlock();
+
         resize(frame,resizedFrame,Size(),0.5,0.5);   //宽高缩小一半,和获取位置时一样
         resizedFrame = resizedFrame(Rect(Point(0,videoHeight/4),Point(videoWidth/2-1,videoHeight/2-1))); //切去上半部分, 保留下半部分
         cvtColor(resizedFrame,resizedFrame,COLOR_BGR2GRAY); //只关心灰度
@@ -97,8 +107,7 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
         }
         ui.updateLastTaskProgress(video.get(CAP_PROP_POS_FRAMES),video.get(CAP_PROP_FRAME_COUNT));
         ui.updateMsg(L"音符数量:" + to_wstring(result.size()));
-        delete frameQueue.front();
-        frameQueue.pop();
+        delete &frame;
     }
     ui.updateLastTaskProgress(video.get(CAP_PROP_POS_FRAMES),video.get(CAP_PROP_FRAME_COUNT));
     ui.updateMsg(L"音符数量:" + to_wstring(result.size()));
