@@ -15,6 +15,7 @@ void KeyPosFinder::begin(string filePath){
     double fps = video.get(CAP_PROP_FPS);
     int videoHeight = video.get(CAP_PROP_FRAME_HEIGHT);
     int videoWidth = video.get(CAP_PROP_FRAME_WIDTH);
+
     wstringstream strBuf;
     strBuf << L"视频高度:" << videoHeight << L", 宽度:" << videoWidth << L", fps:" << fps;
     ui.logI(strBuf.str());
@@ -24,9 +25,13 @@ void KeyPosFinder::begin(string filePath){
     Mat frame;
     Mat resizedFrame;
     if (logLevel == 5) namedWindow("frames");
+    bool detectedGUIOpen = false;
     // #pragma omp parallel
     while (minFramesCnt != vaildFramesCnt){
+        //针对某些视频一开始根本没有打开界面的问题，在没有检测到界面时每隔5帧读取一帧，节省时间
         if(!video.read(frame)) break;
+        if(!detectedGUIOpen) video.set(CAP_PROP_POS_FRAMES, video.get(CAP_PROP_POS_FRAMES) + 4); // 跳过4帧
+        
         resize(frame,resizedFrame,Size(),0.5,0.5);   //宽高缩小一半
         resizedFrame = resizedFrame(Rect(Point(0,videoHeight/4),Point(videoWidth/2-1,videoHeight/2-1))); //切去上半部分, 保留下半部分
         pyrMeanShiftFiltering(resizedFrame,resizedFrame,15*scaleFactor,100*scaleFactor);
@@ -36,6 +41,10 @@ void KeyPosFinder::begin(string filePath){
         vector<Vec3f> circles;
         HoughCircles(resizedFrame,circles, HOUGH_GRADIENT,2,50*scaleFactor,200,55,0,60*scaleFactor);
         ui.updateMsg(L"找到的按键数量:" + to_wstring(circles.size()));
+        if (!detectedGUIOpen && circles.size() > 10 ){
+            detectedGUIOpen = true;
+            startFrame = video.get(CAP_PROP_POS_FRAMES);
+        }   
 
         if (logLevel == 5) {
           for (auto c : circles)

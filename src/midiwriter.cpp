@@ -46,15 +46,15 @@ static int keyToPitch(int key){
 void MidiWriter::toMidiFile(vector<noteData> data, string fileName){
     MidiFile midiFile;
     midiFile.addTimbre(0,0,0,0);
-    midiFile.setTPQ(120);
+    midiFile.setTPQ(240);
     midiFile.absoluteTicks();
     midiFile.addTempo(0, 0, 60);
     for (unsigned int i = 0; i < data.size(); i++) {
       if(data[i].beginTime < 1) continue; //跳过无效的音符
       // int startTick = data[i].beginTime * 1000;
       // int endTick = startTick + 200;
-      int startTick = data[i].beginTime * 120;
-      int endTick = startTick + 30;
+      int startTick = data[i].beginTime * 240;
+      int endTick = startTick + 60;
       midiFile.addNoteOn(0, startTick, 0, keyToPitch(data[i].key), 100);
       midiFile.addNoteOff(0, endTick, 0, keyToPitch(data[i].key));
     }

@@ -1,4 +1,5 @@
 #include "notedetector.h"
+#include "pulsedetector.h"
 
 #include <opencv2/opencv.hpp>
 #include "utils.h"
@@ -31,7 +32,7 @@ static void decoderLoop(VideoCapture& video) {
   }
 }
 
-void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold) {
+void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold, int startFrame) {
     ui.addTask(L"获取按键数据");
     VideoCapture video(filePath);
     if (!video.isOpened()) {
@@ -41,6 +42,8 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
     double frameTime = 1.0/fps;
     int videoHeight = video.get(CAP_PROP_FRAME_HEIGHT);
     int videoWidth = video.get(CAP_PROP_FRAME_WIDTH);
+    video.set(CAP_PROP_POS_FRAMES, startFrame);
+    int curFrame = startFrame;
     //Mat frame;
     Mat resizedFrame;
     if (logLevel == 5)
@@ -49,6 +52,12 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
     pressedKeys.fill(false);
     decoderThread = new thread(decoderLoop, ref(video));
     decoderThread->detach();
+
+    vector<PulseDetector<10>*> detectors;
+    for (int i = 0; i < 21; i++) {
+      detectors.push_back(new PulseDetector<10>(threshold));
+    }
+
     while (!videoEnded){    //处理到视频结尾
         if(video.get(CAP_PROP_POS_FRAMES) <= 2) pressedKeys.fill(false);
         while (frameQueue.size() == 0) {
@@ -75,18 +84,15 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
             double avgColor = mean(resizedFrame,mask)[0];
 
             //检测按下
-            if(avgColor - lastColors[i] < -threshold){
-                if(!pressedKeys[i] && video.get(CAP_PROP_POS_FRAMES) > 2){ //防止连续统计并丢弃前几帧不稳定的数据
-
-                  //记录音符
-                  noteData note = {
-                      .key = i,
-                      .beginTime = frameTime * video.get(CAP_PROP_POS_FRAMES)
-                      };
-                  pressedKeys[i] = true;
-                  result.push_back(note);
-                }
-            }else if(avgColor - lastColors[i] > threshold / 3.0f){
+            detectors[i]->addSample(avgColor);
+            if(detectors[i]->havePulse()){
+              //记录音符
+              noteData note = {
+                  .key = i,
+                  .beginTime = frameTime * curFrame - frameTime * startFrame};
+              pressedKeys[i] = true;
+              result.push_back(note);
+            }else{
                 pressedKeys[i] = false;
             }
 
@@ -97,18 +103,25 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
           for (int i = 0; i < 21; i++){
             auto c = keyPos[i];
             if (pressedKeys[i]){
-              circle(resizedFrame, Point(c[0], c[1]), c[2] * 0.95, Scalar(0, 255, 255), 1);
+              circle(resizedFrame, Point(c[0], c[1]), c[2] * 0.95, Scalar(0, 255, 255), 2);
               circle(resizedFrame, Point(c[0], c[1]), c[2] * 0.75, Scalar(0, 255, 255), 1);
             }
           }
+            this_thread::sleep_for(chrono::milliseconds(20));
 
           imshow("frames", resizedFrame);
           waitKey(1);   //必须加上,否则预览窗口灰屏卡住
         }
-        ui.updateLastTaskProgress(video.get(CAP_PROP_POS_FRAMES),video.get(CAP_PROP_FRAME_COUNT));
+        curFrame++;
+        ui.updateLastTaskProgress(curFrame,video.get(CAP_PROP_FRAME_COUNT));
         ui.updateMsg(L"音符数量:" + to_wstring(result.size()));
         delete &frame;
     }
-    ui.updateLastTaskProgress(video.get(CAP_PROP_POS_FRAMES),video.get(CAP_PROP_FRAME_COUNT));
+    video.release();
+    delete decoderThread;
+    for (int i = 0; i < 21; i++) {
+      delete detectors[i];
+    }
+    ui.updateLastTaskProgress(curFrame,video.get(CAP_PROP_FRAME_COUNT));
     ui.updateMsg(L"音符数量:" + to_wstring(result.size()));
 }

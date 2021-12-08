@@ -27,7 +27,7 @@ private:
 
 public:
 
-    void begin(string filePath, array<Vec3f,21> keyPos, int threshold);
+    void begin(string filePath, array<Vec3f,21> keyPos, int threshold, int startFrame = 0);
     vector<noteData>&& getResult(){
       return move(result);
     }

@@ -99,8 +99,9 @@ ps:我不玩原神)123");
   string filepath = parser.get<string>("input");
   KeyPosFinder finder(ui); 
   finder.begin(filepath);
+  int startFrame = finder.getStartFrame();
   NoteDetector detector(ui);
-  detector.begin(filepath,finder.getResult(),parser.get<int>("--note-threshold"));
+  detector.begin(filepath,finder.getResult(),parser.get<int>("--note-threshold"),startFrame);
   MidiWriter writer;
 
   //let the output file to be the input file except the extension changed to mid 
