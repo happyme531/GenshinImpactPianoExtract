@@ -71,8 +71,11 @@ void NoteDetector::begin(string filePath, array<Vec3f, 21> keyPos, int threshold
         frameQueue.pop();
         frameQueueMutex.unlock();
 
-        resize(frame,resizedFrame,Size(),0.5,0.5);   //宽高缩小一半,和获取位置时一样
-        resizedFrame = resizedFrame(Rect(Point(0,videoHeight/4),Point(videoWidth/2-1,videoHeight/2-1))); //切去上半部分, 保留下半部分
+        // y缩放到480, x等比例 ,和获取位置时一样
+        auto targetVideoHeight = 480;
+        auto targetVideoWidth = videoWidth * targetVideoHeight / videoHeight;
+        resize(frame,resizedFrame,Size(targetVideoWidth,targetVideoHeight));
+        resizedFrame = resizedFrame(Rect(Point(0,targetVideoHeight/2),Point(targetVideoWidth-1,targetVideoHeight-1))); //切去上半部分, 保留下半部分
         cvtColor(resizedFrame,resizedFrame,COLOR_BGR2GRAY); //只关心灰度
         
         //分别获取21个按钮区域的平均颜色

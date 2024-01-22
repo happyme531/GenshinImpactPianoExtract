@@ -38,11 +38,16 @@ int main(int argc, char* argv[]) {
   parser.add_argument("-o", "--output")
       .help("输出文件路径")
       .default_value(string("output.mid")); //存储const char*的std::any被any_cast到std::string时会抛异常
-
+  parser.add_argument("--key-threshold")
+      .help("设置按键位置检测的阈值, "
+            "如果输出的文件中有错音, 可以尝试增加这个值, 如果获取不到按键位置则减少")
+      .default_value(DEFAULT_HOUGH_CIRCLES_THRESHOLD)
+      .scan<'i', int>();
   //get a parameter which represent the threshold of the note finder
   parser.add_argument("-t", "--note-threshold")
       .help("设置音符检测的阈值, 如果输出的文件中有大量不存在的音符则增大这个值, 反之减少")
-      .default_value(DEFAULT_KEY_THRESHOLD);
+      .default_value(DEFAULT_KEY_THRESHOLD)
+      .scan<'i', int>();
   parser.add_argument("-c", "--notui")
       .help("不使用界面")
       .default_value(false)
@@ -97,11 +102,12 @@ ps:我不玩原神)123");
  // omp_set_num_threads(omp_get_num_procs());
 
   string filepath = parser.get<string>("input");
-  KeyPosFinder finder(ui); 
-  finder.begin(filepath);
+  KeyPosFinder finder(ui);
+  finder.begin(filepath, parser.get<int>("--key-threshold"));
   int startFrame = finder.getStartFrame();
   NoteDetector detector(ui);
-  detector.begin(filepath,finder.getResult(),parser.get<int>("--note-threshold"),startFrame);
+  detector.begin(filepath, finder.getResult(),
+                 parser.get<int>("--note-threshold"), startFrame);
   MidiWriter writer;
 
   //let the output file to be the input file except the extension changed to mid 

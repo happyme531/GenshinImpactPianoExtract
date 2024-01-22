@@ -4,3 +4,4 @@
 #define versionStr "${CMAKE_PROJECT_VERSION}"
 constexpr int DEFAULT_KEY_THRESHOLD = 6;
 constexpr int DEFAULT_LOG_LEVEL = 4;
+constexpr int DEFAULT_HOUGH_CIRCLES_THRESHOLD = 60;

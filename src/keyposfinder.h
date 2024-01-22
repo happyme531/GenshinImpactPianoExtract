@@ -12,6 +12,7 @@ class KeyPosFinder {
 private:
   int vaildFramesCnt = 0;
   int minFramesCnt = 20;  
+  int houghCirclesThreshold;
   TermUI& ui;
   vector<vector<Vec3f>> vaildCircles; //3x7 = 21个按键
   array<Vec3f,21> result;
@@ -22,7 +23,7 @@ private:
 
 public:
 
-    void begin(string filePath);
+    void begin(string filePath, int houghCirclesThreshold_ = 60);
     array<Vec3f,21>&& getResult(){
       return move(result);
     }

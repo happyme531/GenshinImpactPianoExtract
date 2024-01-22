@@ -1,11 +1,14 @@
 #include "keyposfinder.h"
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgproc.hpp>
 #include <sstream>
 #include <algorithm>
 #include <opencv2/opencv.hpp>
 #include "utils.h"
 
 
-void KeyPosFinder::begin(string filePath){
+void KeyPosFinder::begin(string filePath, int houghCirclesThreshold_){
+    houghCirclesThreshold = houghCirclesThreshold_;
     ui.addTask(L"检测按键位置");
     VideoCapture video(filePath);
     if(!video.isOpened()){
@@ -21,25 +24,30 @@ void KeyPosFinder::begin(string filePath){
     ui.logI(strBuf.str());
     strBuf.clear();
 
-    double scaleFactor = videoHeight/1080.0; //相比1080p的缩放系数
     Mat frame;
     Mat resizedFrame;
     if (logLevel == 5) namedWindow("frames");
     bool detectedGUIOpen = false;
+    //y缩放到480, x等比例
+    auto targetVideoHeight = 480;
+    auto targetVideoWidth = videoWidth * targetVideoHeight / videoHeight;
     // #pragma omp parallel
     while (minFramesCnt != vaildFramesCnt){
         //针对某些视频一开始根本没有打开界面的问题，在没有检测到界面时每隔5帧读取一帧，节省时间
         if(!video.read(frame)) break;
         if(!detectedGUIOpen) video.set(CAP_PROP_POS_FRAMES, video.get(CAP_PROP_POS_FRAMES) + 4); // 跳过4帧
-        
-        resize(frame,resizedFrame,Size(),0.5,0.5);   //宽高缩小一半
-        resizedFrame = resizedFrame(Rect(Point(0,videoHeight/4),Point(videoWidth/2-1,videoHeight/2-1))); //切去上半部分, 保留下半部分
-        pyrMeanShiftFiltering(resizedFrame,resizedFrame,15*scaleFactor,100*scaleFactor);
+
+        resize(frame,resizedFrame,Size(targetVideoWidth,targetVideoHeight));
+        resizedFrame = resizedFrame(Rect(Point(0,targetVideoHeight/2),Point(targetVideoWidth-1,targetVideoHeight-1))); //切去上半部分, 保留下半部分
         cvtColor(resizedFrame,resizedFrame,COLOR_BGR2GRAY);
+        //equalizeHist(resizedFrame,resizedFrame);
+        auto blurredFrame = Mat();
+        GaussianBlur(resizedFrame, blurredFrame, Size(31,31), 2);
+        //pyrMeanShiftFiltering(resizedFrame,resizedFrame,15*scaleFactor,100*scaleFactor);
         //medianBlur(resizedFrame,resizedFrame,3);
         //Canny(resizedFrame,resizedFrame,80,255);
         vector<Vec3f> circles;
-        HoughCircles(resizedFrame,circles, HOUGH_GRADIENT,2,50*scaleFactor,200,55,0,60*scaleFactor);
+        HoughCircles(blurredFrame,circles, HOUGH_GRADIENT,2,50,200,houghCirclesThreshold,0,60);
         ui.updateMsg(L"找到的按键数量:" + to_wstring(circles.size()));
         if (!detectedGUIOpen && circles.size() > 10 ){
             detectedGUIOpen = true;
@@ -48,8 +56,8 @@ void KeyPosFinder::begin(string filePath){
 
         if (logLevel == 5) {
           for (auto c : circles)
-            circle(resizedFrame, Point(c[0], c[1]), c[2], Scalar(0, 255, 255), 3);
-          imshow("frames", resizedFrame);
+            circle(blurredFrame, Point(c[0], c[1]), c[2], Scalar(0, 255, 255), 3);
+          imshow("frames", blurredFrame);
           waitKey(1);   //必须加上,否则预览窗口灰屏卡住
         }
         //如果有21个圆，保存起来
