@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0)
+
 project(GenshinImpactPianoExtract VERSION 0.1.3)
+cmake_policy(SET CMP0048 NEW)
 
 include(CTest)
 enable_testing()
